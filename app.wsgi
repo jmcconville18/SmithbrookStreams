@@ -8,7 +8,7 @@ logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
 
 def log_and_raise(exception, message):
     logging.error(message)
-    raise exception(message)
+    raise exception(message) if isinstance(exception, type) else exception
 
 # Path to the virtual environment
 VENV_PATH = '/home/joe/Documents/TickerWebsite/venv'
