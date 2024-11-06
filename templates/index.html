@@ -26,16 +26,43 @@
         a:hover {
             text-decoration: underline;
         }
+        .top-right {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 16px;
+        }
+        .logout-btn {
+            margin-left: 10px;
+            font-size: 16px;
+            color: #FF5733;
+        }
     </style>
 </head>
 <body>
+    <!-- Display the username and logout link in the top-right corner -->
+    <div class="top-right">
+        <span>Welcome, {{ username }}</span>
+        <a href="{{ url_for('logout') }}" class="logout-btn">Logout</a>
+    </div>
+
     <h1>Available URLs on the Server</h1>
+
+    <!-- Admin Pages section, visible only if the user is an admin -->
+    {% if role == 'admin' %}
+    <h2>Admin Pages</h2>
+    <ul>
+        <li><a href="{{ url_for('view_logs') }}">View Logs</a></li>
+    </ul>
+    {% endif %}
+
     <h2>HTML Pages</h2>
     <ul>
         <li><a href="/pga-scores">PGA Scores Page</a></li>
         <li><a href="/stocks-page">Stocks Page</a></li>
         <li><a href="/weather-page">Weather Page</a></li>
     </ul>
+
     <h2>JSON Endpoints</h2>
     <ul>
         <li><a href="/tides">Tides Data</a></li>
@@ -45,6 +72,18 @@
         <li><a href="/current-weather">Current Weather Data</a></li>
         <li><a href="/forecast">Forecast Data</a></li>
     </ul>
+
+    <!-- JavaScript to append code to all links if a session code exists -->
+    <script>
+        const sessionCode = "{{ session.get('code') }}";  // Flask renders this server-side
+        if (sessionCode) {
+            document.querySelectorAll('a').forEach(link => {
+                const url = new URL(link.href);
+                url.searchParams.set('code', sessionCode);
+                link.href = url.toString();
+            });
+        }
+    </script>
 </body>
 </html>
 

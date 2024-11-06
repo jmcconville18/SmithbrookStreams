@@ -1,0 +1,29 @@
+2024-11-05 11:18:21 PM - Unknown (IP: 192.168.68.76): Home Page | Params: {}
+2024-11-05 11:19:00 PM - Joe (IP: 100.68.252.32): Home Page | Params: {}
+2024-11-05 11:19:09 PM - Joe (IP: 100.68.252.32): Tides Data | Params: {}
+2024-11-05 11:19:38 PM - Joe (IP: 100.68.252.32): Home Page | Params: {}
+2024-11-05 11:19:46 PM - Joe (IP: 100.68.252.32): Tides Data | Params: {}
+2024-11-05 11:25:45 PM - Joe (IP: 100.68.252.32): Accessed Home Page | Params: {}
+2024-11-05 11:27:20 PM - Joe (IP: 100.68.252.32): Accessed Home Page | Params: {}
+2024-11-05 11:27:22 PM - Joe (IP: 100.68.252.32): Logged Out | Params: {}
+2024-11-05 11:27:28 PM - Joe (IP: 100.68.252.32): Logged In | Params: {}
+2024-11-05 11:27:28 PM - Joe (IP: 100.68.252.32): Accessed Home Page | Params: {}
+2024-11-05 11:31:33 PM - Joe (IP: 100.68.252.32): Accessed Home Page | Params: {}
+2024-11-05 11:34:21 PM - Joe (IP: 100.68.252.32): Weather Data | Params: {}
+2024-11-05 11:34:39 PM - Joe (IP: 100.68.252.32): Home Page | Params: {}
+2024-11-06 12:17:40 AM - Unknown (IP: 100.68.252.32): Home Page | Params: {}
+2024-11-06 12:17:44 AM - Unknown (IP: 100.68.252.32): Weather Data | Params: {}
+2024-11-06 12:17:55 AM - Unknown (IP: 100.68.252.32): Logged Out | Params: {}
+2024-11-06 12:18:03 AM - Joe (IP: 100.68.252.32): Logged In | Params: {}
+2024-11-06 12:18:04 AM - Joe (IP: 100.68.252.32): Home Page | Params: {}
+2024-11-06 12:19:36 AM - Joe (IP: 100.68.252.32): PGA Data | Params: {}
+2024-11-06 12:21:22 AM - Joe (IP: 100.68.252.32): Logged In | Params: {}
+2024-11-06 12:21:23 AM - Joe (IP: 100.68.252.32): Home Page | Params: {}
+2024-11-06 09:59:59 AM - Joe (IP: 100.68.252.32): Logged In | Params: {}
+2024-11-06 09:59:59 AM - Joe (IP: 100.68.252.32): Home Page | Params: {}
+2024-11-06 10:00:12 AM - Joe (IP: 100.68.252.32): Stocks Page | Params: {}
+2024-11-06 10:00:15 AM - Joe (IP: 100.68.252.32): Stocks Data | Params: {'symbols': 'AAPL,MSFT,NVDA,CRM'}
+2024-11-06 10:00:20 AM - Joe (IP: 100.68.252.32): Weather Page | Params: {}
+2024-11-06 10:00:33 AM - Joe (IP: 100.68.252.32): PGA Scores Page | Params: {}
+2024-11-06 10:00:33 AM - Joe (IP: 100.68.252.32): PGA Data | Params: {}
+2024-11-06 10:00:42 AM - Joe (IP: 100.68.252.32): Tides Data | Params: {}

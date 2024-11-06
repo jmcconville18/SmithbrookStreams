@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>User Activity Logs</title>
+    <style>
+        /* Basic styling */
+        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+        th { background-color: #f4f4f4; }
+    </style>
+</head>
+<body>
+    <h1>User Activity Logs</h1>
+
+    <!-- Summary Table -->
+    <h2>User Activity Summary</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Username</th>
+                <th>IP Address</th>
+                <th>Page Views (24h)</th>
+                <th>Page Views (30d)</th>
+                <th>Most Visited Page (30d)</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for username, data in log_summary.items() %}
+            <tr>
+                <td>{{ username }}</td>
+                <td>{{ data.ip }}</td>
+                <td>{{ data.page_views_24h }}</td>
+                <td>{{ data.page_views_30d }}</td>
+                <td>{{ data.most_visited_page_30d }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Detailed Logs Table -->
+    <h2>User Activity Logs</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Timestamp</th>
+                <th>Username</th>
+                <th>IP Address</th>
+                <th>Action</th>
+                <th>Parameters</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for log in logs %}
+            <tr>
+                <td>{{ log.timestamp }}</td>
+                <td>{{ log.username }}</td>
+                <td>{{ log.ip }}</td>
+                <td>{{ log.action }}</td>
+                <td>{{ log.params }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>
+
