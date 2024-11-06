@@ -125,13 +125,18 @@ def require_secret_code(func):
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        username = request.form['username']
+        # Make username case-insensitive by converting it to lowercase
+        entered_username = request.form['username'].strip().lower()
         password = request.form['password']
-        user = USERS.get(username)
+        
+        # Find the user in USERS dictionary using lowercase keys
+        # You may normalize the dictionary once if modifying it is possible.
+        user = next((user for name, user in USERS.items() if name.lower() == entered_username), None)
+        
         # Check user credentials
         if user and user['password'] == password:
-            # Set the secret code, username, and role in the session upon successful login
-            session['username'] = username
+            # Set the secret code, username (case-insensitive), and role in the session upon successful login
+            session['username'] = next(name for name in USERS if name.lower() == entered_username)
             session['role'] = user['role']
             session['code'] = SECRET_CODE
             log_activity("Logged In")
