@@ -14,9 +14,9 @@ from collections import Counter
 import datetime
 
 
+
 def calculate_log_summary():
     summary = {}
-    logs = []
     log_pattern = re.compile(r"^(.*?) - (.*?) \(IP: (.*?)\): (.*?) \| Params: (.*)$")
     
     now = datetime.datetime.now()
@@ -46,14 +46,16 @@ def calculate_log_summary():
                             summary[username]["page_views_24h"] += 1
                         summary[username]["page_views_30d"] += 1
 
-                        # Update page counts for the last 30 days
-                        summary[username]["page_counts_30d"][action] += 1
+                        # Exclude 'Home Page' and 'Logged In' from page counts
+                        if action not in ['Home Page', 'Logged In']:
+                            summary[username]["page_counts_30d"][action] += 1
             except Exception as e:
                 logging.error(f"Error parsing log line: {line.strip()}. Error: {e}")
                 continue
 
     # Calculate most visited page for each user
     for user_data in summary.values():
+        # Exclude 'Home Page' and 'Logged In' from most visited page calculation
         if user_data["page_counts_30d"]:
             most_visited_page = user_data["page_counts_30d"].most_common(1)[0]
             user_data["most_visited_page_30d"] = f"{most_visited_page[0]} ({most_visited_page[1]})"
@@ -61,7 +63,6 @@ def calculate_log_summary():
             user_data["most_visited_page_30d"] = "N/A"
 
     return summary
-
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
