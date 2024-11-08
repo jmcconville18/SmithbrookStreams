@@ -4,8 +4,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Stock Data</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        label, input, button {
+            margin-bottom: 10px;
+        }
+        .stock-attribute {
+            margin: 5px 0;
+        }
+        #stocks-output p {
+            margin: 5px 0;
+        }
+    </style>
     <script>
-        const stockUrl = '/stocks';
+        const stockUrl = '/data/stocks';
         const DEFAULT_SYMBOLS = 'AAPL,MSFT,NVDA,CRM';
 
         function getStoredSymbols() {
@@ -32,10 +47,13 @@
             output.textContent = 'Fetching stock data...';
 
             try {
-                const response = await fetch(`${stockUrl}?symbols=${symbols.join(',')}`);
+                // Fetch data from the correct endpoint with the secret code
+                const response = await fetch(`${stockUrl}?symbols=${symbols.join(',')}&code=3XUpMyQSCo5nMzte`);
+                
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
+
                 const data = await response.json();
 
                 if (data.error) {
@@ -76,21 +94,6 @@
             symbolInput.value = getStoredSymbols();
         });
     </script>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-        }
-        label, input, button {
-            margin-bottom: 10px;
-        }
-        .stock-attribute {
-            margin: 5px 0;
-        }
-        #stocks-output p {
-            margin: 5px 0;
-        }
-    </style>
 </head>
 <body>
     <div>

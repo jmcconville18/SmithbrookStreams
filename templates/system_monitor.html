@@ -2,68 +2,71 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Server Resource Monitoring</title>
     <style>
-        body {
-            font-family: 'Roboto', sans-serif;
-            background-color: #f5f5f5;
-            color: #333;
-            padding: 20px;
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 20px; 
         }
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            background-color: #ffffff;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        h2 { 
+            color: blue; 
         }
-        h2 { color: #007BFF; }
-        .metric { margin-bottom: 20px; }
-        .metric label { font-weight: bold; }
-        .metric span { font-size: 1.2em; }
+        p { 
+            margin: 5px 0; 
+        }
+        pre { 
+            background-color: #f4f4f4; 
+            padding: 10px; 
+            border-radius: 5px; 
+        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h2>Server Resource Monitoring</h2>
-        <div id="local-metrics" class="metric">
-            <h3>Local Server</h3>
-            <label>CPU Usage:</label> <span id="local-cpu"></span>%<br>
-            <label>Memory Usage:</label> <span id="local-memory"></span>%<br>
-            <label>Disk Usage:</label> <span id="local-disk"></span>%<br>
-        </div>
+    <h2>Server Resource Monitoring</h2>
+    
+    <!-- Local Server Metrics -->
+    <h3>Local Server</h3>
+    <p>CPU Usage: <span id="cpu">Loading...</span>%</p>
+    <p>Memory Usage: <span id="memory">Loading...</span>%</p>
+    <p>Disk Usage: <span id="disk">Loading...</span>%</p>
 
-        <div id="joedrive-metrics" class="metric">
-            <h3>JoeDrive</h3>
-            <label>Disk Usage:</label> <span id="joedrive-disk"></span>%<br>
-        </div>
+    <!-- JoeDrive Metrics -->
+    <h3>JoeDrive</h3>
+    <p>Disk Usage: <span id="joedrive">Loading...</span>%</p>
 
-        <div id="vps-metrics" class="metric">
-            <h3>VPS</h3>
-            <pre id="vps-output"></pre>
-        </div>
-    </div>
+    <!-- VPS Metrics -->
+    <h3>VPS</h3>
+    <pre id="vps_output">Loading...</pre>
 
     <script>
+        // Function to fetch metrics from the backend
         async function fetchMetrics() {
-            const response = await fetch('/api/metrics');
-            const data = await response.json();
+            try {
+                // Adjust the endpoint to match the registered blueprint URL
+                const response = await fetch('/metrics/api/metrics');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
 
-            document.getElementById('local-cpu').textContent = data.local.cpu;
-            document.getElementById('local-memory').textContent = data.local.memory;
-            document.getElementById('local-disk').textContent = data.local.disk;
+                // Update Local Server Metrics
+                document.getElementById('cpu').textContent = data.local.cpu ?? 'N/A';
+                document.getElementById('memory').textContent = data.local.memory ?? 'N/A';
+                document.getElementById('disk').textContent = data.local.disk ?? 'N/A';
 
-            document.getElementById('joedrive-disk').textContent = data.joedrive.disk;
+                // Update JoeDrive Metrics
+                document.getElementById('joedrive').textContent = data.joedrive.disk ?? 'N/A';
 
-            if (data.vps.vps_output) {
-                document.getElementById('vps-output').textContent = data.vps.vps_output;
+                // Update VPS Metrics
+                document.getElementById('vps_output').textContent = data.vps.vps_output ?? 'N/A';
+            } catch (error) {
+                console.error('Error fetching metrics:', error);
             }
         }
 
-        // Fetch metrics every 5 seconds
-        setInterval(fetchMetrics, 5000);
-        fetchMetrics();
+        // Fetch metrics on page load
+        document.addEventListener('DOMContentLoaded', fetchMetrics);
     </script>
 </body>
 </html>

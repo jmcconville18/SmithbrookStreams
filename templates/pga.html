@@ -4,10 +4,39 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PGA Scores</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        #results {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        h3 {
+            color: #007BFF;
+        }
+        h4 {
+            margin-top: 20px;
+            color: #333;
+        }
+        .tournament-info, .leaderboard {
+            margin-bottom: 20px;
+        }
+        .player {
+            margin-bottom: 10px;
+        }
+        .player strong {
+            font-weight: bold;
+        }
+    </style>
     <script>
         async function fetchPGAScores() {
             try {
-                const response = await fetch('/pga');
+                const response = await fetch('/data/pga?code=3XUpMyQSCo5nMzte');
                 const data = await response.json();
                 const resultsContainer = document.getElementById('results');
 
@@ -16,46 +45,69 @@
                     return;
                 }
 
-                let results = `<h3>${data.league}</h3>`;
+                let results = `<h3>${data.league || 'PGA Tour'}</h3>`;
 
                 const formatDate = (dateStr) => {
                     const date = new Date(dateStr);
                     return `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear().toString().slice(-2)}`;
                 };
+
                 const formatPurse = (purse) => {
-                    return `$${parseFloat(purse.replace(/,/g, '')).toLocaleString()}`;
+                    return purse ? `$${parseFloat(purse.replace(/,/g, '')).toLocaleString()}` : 'N/A';
                 };
 
-                const tournaments = data.tournaments;
-                if (tournaments.previous) {
-                    results += `<p><strong>Previous Tournament:</strong> ${tournaments.previous.name} (${formatDate(tournaments.previous.start_date)} - ${formatDate(tournaments.previous.end_date)})</p>`;
-                    results += `<p>Purse: ${formatPurse(tournaments.previous.prize_fund)}</p>`;
-                    results += `<h4>Leaderboard</h4>`;
-                    data.games.forEach(player => {
-                        if (player.holes === 'F') {
-                            results += `<p>${player.player}: ${player.score} (Holes completed: ${player.holes})</p>`;
-                        }
-                    });
+                // Handle Current Tournament
+                if (data.tournaments.current) {
+                    const current = data.tournaments.current;
+                    results += `
+                        <div class="tournament-info">
+                            <h4>Current Tournament: ${current.name}</h4>
+                            <p>Location: ${current.course}, ${current.country}</p>
+                            <p>Dates: ${formatDate(current.start_date)} - ${formatDate(current.end_date)}</p>
+                            <p>Purse: ${formatPurse(current.prize_fund)}</p>
+                            <h4>Leaderboard</h4>
+                        </div>`;
+                    
+                    if (data.games && data.games.length > 0) {
+                        data.games.forEach(player => {
+                            if (player.holes !== 'F') {
+                                results += `<div class="player">
+                                    <strong>${player.player}</strong>: ${player.score} (Holes: ${player.holes})
+                                </div>`;
+                            }
+                        });
+                    }
                 }
-                if (tournaments.current) {
-                    results += `<p><strong>Current Tournament:</strong> ${tournaments.current.name} (${formatDate(tournaments.current.start_date)} - ${formatDate(tournaments.current.end_date)})</p>`;
-                    results += `<p>Purse: ${formatPurse(tournaments.current.prize_fund)}</p>`;
-                    results += `<h4>Leaderboard</h4>`;
-                    data.games.forEach(player => {
-                        if (player.holes !== 'F') {
-                            results += `<p>${player.player}: ${player.score} (Holes completed: ${player.holes})</p>`;
-                        }
-                    });
+
+                // Handle Next Tournament
+                if (data.tournaments.next) {
+                    const next = data.tournaments.next;
+                    results += `
+                        <div class="tournament-info">
+                            <h4>Next Tournament: ${next.name}</h4>
+                            <p>Location: ${next.course}, ${next.country}</p>
+                            <p>Dates: ${formatDate(next.start_date)} - ${formatDate(next.end_date)}</p>
+                            <p>Purse: ${formatPurse(next.prize_fund)}</p>
+                        </div>`;
                 }
-                if (tournaments.next) {
-                    results += `<p><strong>Next Tournament:</strong> ${tournaments.next.name} (${formatDate(tournaments.next.start_date)} - ${formatDate(tournaments.next.end_date)})</p>`;
-                    results += `<p>Purse: ${formatPurse(tournaments.next.prize_fund)}</p>`;
+
+                // Handle Previous Tournament
+                if (data.tournaments.previous) {
+                    const previous = data.tournaments.previous;
+                    results += `
+                        <div class="tournament-info">
+                            <h4>Previous Tournament: ${previous.name}</h4>
+                            <p>Location: ${previous.course}, ${previous.country}</p>
+                            <p>Dates: ${formatDate(previous.start_date)} - ${formatDate(previous.end_date)}</p>
+                            <p>Purse: ${formatPurse(previous.prize_fund)}</p>
+                        </div>`;
                 }
 
                 resultsContainer.innerHTML = results;
 
             } catch (error) {
                 console.error('Error fetching PGA scores:', error);
+                document.getElementById('results').innerHTML = `<p>Error fetching PGA scores. Please try again later.</p>`;
             }
         }
 
