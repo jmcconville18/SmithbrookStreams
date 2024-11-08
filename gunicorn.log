@@ -1,0 +1,13 @@
+[2024-11-08 13:51:39 -0500] [1591968] [INFO] Starting gunicorn 23.0.0
+[2024-11-08 13:51:39 -0500] [1591968] [INFO] Listening at: http://0.0.0.0:5000 (1591968)
+[2024-11-08 13:51:39 -0500] [1591968] [INFO] Using worker: sync
+[2024-11-08 13:51:39 -0500] [1591969] [INFO] Booting worker with pid: 1591969
+[2024-11-08 13:51:39 -0500] [1591970] [INFO] Booting worker with pid: 1591970
+[2024-11-08 13:51:39 -0500] [1591971] [INFO] Booting worker with pid: 1591971
+[2024-11-08 13:51:39 -0500] [1591972] [INFO] Booting worker with pid: 1591972
+[2024-11-08 13:52:24 -0500] [1591968] [INFO] Handling signal: int
+[2024-11-08 13:52:24 -0500] [1591969] [INFO] Worker exiting (pid: 1591969)
+[2024-11-08 13:52:24 -0500] [1591972] [INFO] Worker exiting (pid: 1591972)
+[2024-11-08 13:52:24 -0500] [1591970] [INFO] Worker exiting (pid: 1591970)
+[2024-11-08 13:52:24 -0500] [1591971] [INFO] Worker exiting (pid: 1591971)
+[2024-11-08 13:52:24 -0500] [1591968] [INFO] Shutting down: Master

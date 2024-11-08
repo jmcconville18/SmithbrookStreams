@@ -102,7 +102,7 @@
     <!-- Display the username and logout link -->
     <div class="top-right">
         <span>{{ username }}</span>
-        <a href="{{ url_for('logout') }}" class="logout-btn">Logout</a>
+        <a href="{{ url_for('auth.logout') }}" class="logout-btn">Logout</a>
     </div>
 
     <div class="container">
@@ -118,12 +118,11 @@
         {% if role == 'admin' %}
         <h2>Admin Pages</h2>
         <ul>
-          <li><a href="{{ url_for('view_logs') }}">View Logs</a></li> 
-          <li><a href="{{ url_for('system_monitor') }}">System Monitor</a></li>
+          <li><a href="{{ url_for('admin.view_logs') }}">View Logs</a></li> 
+          <li><a href="{{ url_for('admin.system_monitor') }}">System Monitor</a></li>
           <li><a href="https://ha.smithbrookstreams.com" target="_blank">Home Assistant</a></li>
         </ul>
         {% endif %}
-
 
         <h2>HTML Pages</h2>
         <ul>
@@ -134,12 +133,12 @@
 
         <h2>JSON Endpoints</h2>
         <ul>
-            <li><a href="/tides">Tides Data</a></li>
-            <li><a href="/weather">Weather Data</a></li>
-            <li><a href="/pga">PGA Scores Data</a></li>
-            <li><a href="/stocks?symbols=AAPL,MSFT,NVDA,CRM">Stocks Data</a></li>
-            <li><a href="/current-weather">Current Weather Data</a></li>
-            <li><a href="/forecast">Forecast Data</a></li>
+            <li><a href="/data/tides">Tides Data</a></li>
+            <li><a href="/data/weather">Weather Data</a></li>
+            <li><a href="/data/pga">PGA Scores Data</a></li>
+            <li><a href="/data/stocks?symbols=AAPL,MSFT,NVDA,CRM">Stocks Data</a></li>
+            <li><a href="/data/current-weather">Current Weather Data</a></li>
+            <li><a href="/data/forecast">Forecast Data</a></li>
         </ul>
     </div>
 
