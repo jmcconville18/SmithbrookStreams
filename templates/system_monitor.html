@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Server Resource Monitoring</title>
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        h2 { color: #007BFF; }
+        .metric { margin-bottom: 20px; }
+        .metric label { font-weight: bold; }
+        .metric span { font-size: 1.2em; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Server Resource Monitoring</h2>
+        <div id="local-metrics" class="metric">
+            <h3>Local Server</h3>
+            <label>CPU Usage:</label> <span id="local-cpu"></span>%<br>
+            <label>Memory Usage:</label> <span id="local-memory"></span>%<br>
+            <label>Disk Usage:</label> <span id="local-disk"></span>%<br>
+        </div>
+
+        <div id="joedrive-metrics" class="metric">
+            <h3>JoeDrive</h3>
+            <label>Disk Usage:</label> <span id="joedrive-disk"></span>%<br>
+        </div>
+
+        <div id="vps-metrics" class="metric">
+            <h3>VPS</h3>
+            <pre id="vps-output"></pre>
+        </div>
+    </div>
+
+    <script>
+        async function fetchMetrics() {
+            const response = await fetch('/api/metrics');
+            const data = await response.json();
+
+            document.getElementById('local-cpu').textContent = data.local.cpu;
+            document.getElementById('local-memory').textContent = data.local.memory;
+            document.getElementById('local-disk').textContent = data.local.disk;
+
+            document.getElementById('joedrive-disk').textContent = data.joedrive.disk;
+
+            if (data.vps.vps_output) {
+                document.getElementById('vps-output').textContent = data.vps.vps_output;
+            }
+        }
+
+        // Fetch metrics every 5 seconds
+        setInterval(fetchMetrics, 5000);
+        fetchMetrics();
+    </script>
+</body>
+</html>
+

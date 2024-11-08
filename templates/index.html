@@ -118,10 +118,12 @@
         {% if role == 'admin' %}
         <h2>Admin Pages</h2>
         <ul>
-            <li><a href="{{ url_for('view_logs') }}">View Logs</a></li> 
-            <li><a href="https://ha.smithbrookstreams.com" target="_blank">Home Assistant</a></li>
+          <li><a href="{{ url_for('view_logs') }}">View Logs</a></li> 
+          <li><a href="{{ url_for('system_monitor') }}">System Monitor</a></li>
+          <li><a href="https://ha.smithbrookstreams.com" target="_blank">Home Assistant</a></li>
         </ul>
         {% endif %}
+
 
         <h2>HTML Pages</h2>
         <ul>

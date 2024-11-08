@@ -1,3 +1,7 @@
 Flask
 requests
 Flask-Cors
+psutil
+paramiko
+gunicorn
+
