@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <link rel="icon" href="/static/favicon.png" type="image/png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Smithbrook Streams</title>
@@ -9,13 +10,13 @@
         body {
             font-family: 'Roboto', sans-serif;
             margin: 0;
-            background-color: #e0f4f1; /* Light teal background */
+            background-color: #e0f4f1;
             color: #333;
             display: flex;
             justify-content: center;
             align-items: flex-start;
             min-height: 100vh;
-            padding: 20px; /* Padding around the main container */
+            padding: 20px;
         }
 
         .container {
@@ -30,36 +31,29 @@
         }
 
         .container:hover {
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2); /* Hover effect for interactivity */
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
         }
 
         .logo {
-            width: 200px; /* Increased size for prominence */
+            width: 200px;
             height: auto;
             margin-bottom: 1rem;
-            border-radius: 10px; /* Rounded edges for better blending */
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Soft shadow */
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
 
-        h1 {
-            font-size: 1.75rem;
-            font-weight: 600; /* Increased weight for title */
-            color: #006d72; /* Slightly darker teal for better contrast */
+        h1, h2 {
             margin-bottom: 1.5rem;
         }
 
         h2 {
             color: #555;
-            font-size: 1.25rem;
-            font-weight: 600; /* Bolded section headings */
-            margin-top: 1.5rem;
-            margin-bottom: 0.5rem;
+            font-weight: 600;
         }
 
         ul {
             list-style-type: none;
             padding: 0;
-            margin: 0;
         }
 
         li {
@@ -78,52 +72,54 @@
 
         a:hover {
             text-decoration: underline;
-            color: #005f9e; /* Darker shade on hover */
-            border-color: #005f9e; /* Adds subtle border on hover */
+            color: #005f9e;
+            border-color: #005f9e;
         }
 
         .top-right {
             position: absolute;
             top: 20px;
             right: 20px;
-            font-size: 16px;
         }
 
         .logout-btn {
             margin-left: 10px;
-            font-size: 16px;
             color: #FF5733;
             text-decoration: none;
             font-weight: bold;
-            padding: 5px 10px; /* Button-like appearance */
+            padding: 5px 10px;
             border: 1px solid #FF5733;
             border-radius: 4px;
-            transition: background-color 0.3s ease, color 0.3s ease;
         }
 
         .logout-btn:hover {
             background-color: #FF5733;
             color: #ffffff;
-            text-decoration: none;
         }
     </style>
 </head>
 <body>
-    <!-- Display the username and logout link in the top-right corner -->
+    <!-- Display the username and logout link -->
     <div class="top-right">
         <span>{{ username }}</span>
         <a href="{{ url_for('logout') }}" class="logout-btn">Logout</a>
     </div>
 
     <div class="container">
-        <!-- Logo at the top of the page with rounded edges and shadow -->
         <img src="/static/SmithbrookStreamsLogo.png" alt="Smithbrook Streams Logo" class="logo">
+
+        <!-- Media Section -->
+        <h2>Media Access</h2>
+        <ul>
+            <li><a href="https://plex.smithbrookstreams.com" target="_blank">Plex</a></li>
+        </ul>
 
         <!-- Admin Pages section, visible only if the user is an admin -->
         {% if role == 'admin' %}
         <h2>Admin Pages</h2>
         <ul>
             <li><a href="{{ url_for('view_logs') }}">View Logs</a></li> 
+            <li><a href="https://ha.smithbrookstreams.com" target="_blank">Home Assistant</a></li>
         </ul>
         {% endif %}
 
@@ -147,7 +143,7 @@
 
     <!-- JavaScript to append code to all links if a session code exists -->
     <script>
-        const sessionCode = "{{ session.get('code') }}";  // Flask renders this server-side
+        const sessionCode = "{{ session.get('code') }}";
         if (sessionCode) {
             document.querySelectorAll('a').forEach(link => {
                 const url = new URL(link.href);
