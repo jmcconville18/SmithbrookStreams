@@ -13,7 +13,7 @@
             align-items: center;
             height: 100vh;
             margin: 0;
-            background-color: #e0f4f1; /* Light teal to complement the logo */
+            background-color: #e0f4f1;
             color: #333;
         }
         .login-container {
@@ -26,22 +26,16 @@
             text-align: center;
         }
         .logo {
-            width: 220px; /* Slightly smaller for better balance */
+            width: 220px;
             height: auto;
             margin-bottom: 1rem;
-            border-radius: 10px; /* Rounds edges of the logo */
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Soft shadow for blending */
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
         .error-message {
-            color: #FF5733; /* Red color for error text */
+            color: #FF5733;
             font-weight: 500;
             margin-bottom: 1rem;
-        }
-        h1 {
-            font-size: 1.5rem;
-            font-weight: 500;
-            margin-bottom: 1.5rem;
-            color: #007B83; /* Complementary darker teal */
         }
         label {
             display: block;
@@ -51,13 +45,12 @@
             margin-bottom: 0.5rem;
         }
         input {
-            width: calc(100% - 20px); /* Equal padding on both sides */
+            width: calc(100% - 20px);
             padding: 0.75rem;
             margin-bottom: 1rem;
             border: 1px solid #ccc;
             border-radius: 5px;
             font-size: 1rem;
-            box-sizing: border-box; /* Ensures padding is accounted for */
         }
         button {
             width: 100%;
@@ -85,7 +78,7 @@
         <div class="error-message">{{ error }}</div>
         {% endif %}
         
-        <form action="/login" method="POST">
+        <form action="{{ url_for('auth.login') }}" method="POST">
             <label for="username">Username:</label>
             <input type="text" id="username" name="username" required>
             

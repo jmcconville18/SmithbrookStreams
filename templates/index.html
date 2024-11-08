@@ -124,22 +124,23 @@
         </ul>
         {% endif %}
 
-        <h2>HTML Pages</h2>
-        <ul>
-            <li><a href="/pga-scores">PGA Scores Page</a></li>
-            <li><a href="/stocks-page">Stocks Page</a></li>
-            <li><a href="/weather-page">Weather Page</a></li>
-        </ul>
+<h2>HTML Pages</h2>
+<ul>
+    <li><a href="/pga-scores?code={{ code }}">PGA Scores Page</a></li>
+    <li><a href="/stocks-page?code={{ code }}">Stocks Page</a></li>
+    <li><a href="/weather-page?code={{ code }}">Weather Page</a></li>
+</ul>
 
-        <h2>JSON Endpoints</h2>
-        <ul>
-            <li><a href="/data/tides">Tides Data</a></li>
-            <li><a href="/data/weather">Weather Data</a></li>
-            <li><a href="/data/pga">PGA Scores Data</a></li>
-            <li><a href="/data/stocks?symbols=AAPL,MSFT,NVDA,CRM">Stocks Data</a></li>
-            <li><a href="/data/current-weather">Current Weather Data</a></li>
-            <li><a href="/data/forecast">Forecast Data</a></li>
-        </ul>
+<h2>JSON Endpoints</h2>
+<ul>
+    <li><a href="/data/tides?code={{ code }}">Tides Data</a></li>
+    <li><a href="/data/weather?code={{ code }}">Weather Data</a></li>
+    <li><a href="/data/pga?code={{ code }}">PGA Scores Data</a></li>
+    <li><a href="/data/stocks?symbols=AAPL,MSFT,NVDA,CRM&code={{ code }}">Stocks Data</a></li>
+    <li><a href="/data/current-weather?code={{ code }}">Current Weather Data</a></li>
+    <li><a href="/data/forecast?code={{ code }}">Forecast Data</a></li>
+</ul>
+
     </div>
 
     <!-- JavaScript to append code to all links if a session code exists -->

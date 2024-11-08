@@ -1,9 +1,14 @@
 import re
 import datetime
-
+# Define users with roles
 USERS = {
-    "admin": {"password": "adminpass", "role": "admin"},
-    "user": {"password": "userpass", "role": "user"}
+    "Joe": {"password": "6v3Dsjx5wsLlCc", "role": "admin"},
+    "Katy": {"password": "pass1", "role": "user"},
+    "Annie": {"password": "pass1", "role": "user"},
+    "Grace": {"password": "pass1", "role": "user"},
+    "Will": {"password": "pass1", "role": "user"},
+    "Laura": {"password": "pass1", "role": "user"},
+    "Terry": {"password": "pass1", "role": "admin"}
 }
 
 def authenticate_user(username, password):
