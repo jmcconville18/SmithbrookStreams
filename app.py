@@ -18,7 +18,7 @@ app.register_blueprint(data_bp, url_prefix='/data')
 app.register_blueprint(metrics_bp, url_prefix='/metrics')
 app.register_blueprint(views_bp)  # No prefix for the main views
 
-print(app.url_map)
+# print(app.url_map)
 
 if __name__ == '__main__':
     app.run(debug=True)

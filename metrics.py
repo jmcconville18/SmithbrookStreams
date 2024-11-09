@@ -4,8 +4,8 @@ import paramiko
 
 metrics_bp = Blueprint('metrics', __name__)
 
-VPS_IP = '150.136.87.31'
-VPS_USER = 'opc'
+VPS_IP = '198.12.80.190'
+VPS_USER = 'jmcconville'
 VPS_KEY_PATH = '/home/joe/.ssh/id_rsa'
 
 def get_local_metrics():
