@@ -9,7 +9,7 @@ app = Flask(__name__)
 app.secret_key = '3XUpMyQSCo5nMzte'
 app.config['SESSION_TYPE'] = 'filesystem'  # Ensure sessions are stored properly
 app.config['SESSION_COOKIE_SECURE'] = True  # Ensure cookies work over HTTPS
-
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///MediaRequests.db'
 
 # Register Blueprints with appropriate URL prefixes
 app.register_blueprint(auth_bp, url_prefix='/auth')
@@ -21,5 +21,7 @@ app.register_blueprint(views_bp)  # No prefix for the main views
 # print(app.url_map)
 
 if __name__ == '__main__':
+    with app.app_context():
+        db.create_all()
     app.run(debug=True)
 

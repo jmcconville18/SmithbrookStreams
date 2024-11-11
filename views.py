@@ -2,6 +2,8 @@ from flask import Blueprint, render_template, session, redirect, url_for, flash
 from pga import fetch_pga_data  # Import the function that fetches PGA data
 from stocks import fetch_stock_data  # Import the function for fetching stock data
 from weather import get_weather_data  # Import the function for fetching weather data
+from models import db, MediaRequest
+from flask_login import current_user, login_required
 
 views_bp = Blueprint('views', __name__)
 
@@ -23,6 +25,41 @@ def index():
     return render_template('index.html', username=username, role=role, code=code)
 
 
+@app.route('/media-requests', methods=['GET', 'POST'])
+@login_required
+def media_requests():
+    if request.method == 'POST':
+        title = request.form.get('title')
+        description = request.form.get('description')
+        submitted_by = current_user.username if current_user.is_authenticated else 'Anonymous'
+        
+        new_request = MediaRequest(
+            title=title,
+            description=description,
+            submitted_by=submitted_by
+        )
+        db.session.add(new_request)
+        db.session.commit()
+        flash("Request submitted successfully!", "success")
+        return redirect(url_for('media_requests'))
+
+    open_requests = MediaRequest.query.filter_by(status='Open').all()
+    completed_requests = MediaRequest.query.filter_by(status='Completed').all()
+    return render_template('requests.html', open_requests=open_requests, completed_requests=completed_requests)
+
+@app.route('/update-request/<int:id>', methods=['POST'])
+@login_required
+def update_request(id):
+    if current_user.role != 'admin':
+        flash("Unauthorized access!", "danger")
+        return redirect(url_for('media_requests'))
+
+    request_to_update = MediaRequest.query.get_or_404(id)
+    request_to_update.status = 'Completed'
+    db.session.commit()
+    flash("Request marked as completed.", "success")
+    return redirect(url_for('media_requests'))
+    
 @views_bp.route('/pga-scores')
 def pga_scores():
     # Check if the user is logged in
