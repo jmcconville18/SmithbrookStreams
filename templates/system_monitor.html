@@ -20,54 +20,23 @@
             padding: 10px; 
             border-radius: 5px; 
         }
+        iframe {
+            width: 100%;
+            height: 600px; /* Adjust the height as needed */
+            border: none;
+        }
     </style>
 </head>
 <body>
-    <h2>Server Resource Monitoring</h2>
-    
-    <!-- Local Server Metrics -->
-    <h3>Local Server</h3>
-    <p>CPU Usage: <span id="cpu">Loading...</span>%</p>
-    <p>Memory Usage: <span id="memory">Loading...</span>%</p>
-    <p>Disk Usage: <span id="disk">Loading...</span>%</p>
 
-    <!-- JoeDrive Metrics -->
-    <h3>JoeDrive</h3>
-    <p>Disk Usage: <span id="joedrive">Loading...</span>%</p>
+    <!-- Grafana Dashboard Embed -->
+    <h3>System Metrics Dashboard</h3>
+    <iframe 
+        src="https://grafana.smithbrookstreams.com/d/be3go3tgkw0sgc/system-metrics?from=now-6h&to=now&timezone=browser"
+        allowfullscreen>
+    </iframe>
 
-    <!-- VPS Metrics -->
-    <h3>VPS</h3>
-    <pre id="vps_output">Loading...</pre>
 
-    <script>
-        // Function to fetch metrics from the backend
-        async function fetchMetrics() {
-            try {
-                // Adjust the endpoint to match the registered blueprint URL
-                const response = await fetch('/metrics/api/metrics');
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                const data = await response.json();
-
-                // Update Local Server Metrics
-                document.getElementById('cpu').textContent = data.local.cpu ?? 'N/A';
-                document.getElementById('memory').textContent = data.local.memory ?? 'N/A';
-                document.getElementById('disk').textContent = data.local.disk ?? 'N/A';
-
-                // Update JoeDrive Metrics
-                document.getElementById('joedrive').textContent = data.joedrive.disk ?? 'N/A';
-
-                // Update VPS Metrics
-                document.getElementById('vps_output').textContent = data.vps.vps_output ?? 'N/A';
-            } catch (error) {
-                console.error('Error fetching metrics:', error);
-            }
-        }
-
-        // Fetch metrics on page load
-        document.addEventListener('DOMContentLoaded', fetchMetrics);
-    </script>
 </body>
 </html>
 

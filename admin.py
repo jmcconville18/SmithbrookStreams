@@ -1,10 +1,12 @@
-from flask import Blueprint, render_template
+from flask import Blueprint, render_template, jsonify
 import datetime
 import re
+import psutil
 from collections import defaultdict
 
 admin_bp = Blueprint('admin', __name__)
 
+# Existing functions for log management
 def get_logs():
     """
     Function to read and return all logs from 'user_activity.log'.
@@ -25,7 +27,6 @@ def get_logs():
                     'params': params
                 })
     return logs
-
 
 def calculate_log_summary():
     """
@@ -84,11 +85,8 @@ def view_logs():
     Route to display user activity logs and summary.
     """
     try:
-        # Fetch logs and generate summary
         logs = get_logs()
         log_summary = calculate_log_summary()
-        
-        # Render the template with both logs and summary
         return render_template('view_logs.html', logs=logs, log_summary=log_summary)
     except Exception as e:
         print(f"Error fetching logs: {e}")
@@ -100,10 +98,26 @@ def system_monitor():
     Route to display system monitoring information.
     """
     try:
-        # For now, just render a placeholder template
         return render_template('system_monitor.html')
     except Exception as e:
         print(f"Error in system monitor: {e}")
         return render_template('error.html', error_message=str(e))
 
+# New API endpoint for real-time server stats
+@admin_bp.route('/admin/api/server-stats')
+def server_stats():
+    """
+    API endpoint to return server resource usage as JSON.
+    """
+    try:
+        data = {
+            'cpu': psutil.cpu_percent(interval=1),
+            'memory': psutil.virtual_memory().percent,
+            'disk': psutil.disk_usage('/').percent,
+            'joedrive': psutil.disk_usage('/mnt/JoeDrive').percent
+        }
+        return jsonify(data)
+    except Exception as e:
+        print(f"Error fetching server stats: {e}")
+        return jsonify({'error': str(e)}), 500
 
