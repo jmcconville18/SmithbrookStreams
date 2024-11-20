@@ -1,34 +1,221 @@
-{% extends "base.html" %}
-{% block content %}
-<h2>Media Requests</h2>
-<form method="POST">
-    <label for="title">Title:</label>
-    <input type="text" id="title" name="title" required>
-    
-    <label for="description">Description:</label>
-    <textarea id="description" name="description"></textarea>
-    
-    <button type="submit">Submit Request</button>
-</form>
 
-<h3>Open Requests</h3>
-<ul>
-    {% for request in open_requests %}
-    <li>{{ request.title }} - {{ request.submitted_by }} 
-        {% if current_user.role == 'admin' %}
-        <form action="{{ url_for('update_request', id=request.id) }}" method="post" style="display:inline;">
-            <button type="submit">Mark as Completed</button>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Media Requests</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #e8f8f5; /* Light teal background */
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 20px auto;
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            color: #026670; /* Deep teal */
+            margin-bottom: 20px;
+            text-align: center;
+            position: relative;
+        }
+
+        h2::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 3px;
+            background-color: #026670;
+            border-radius: 10px;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        input[type="text"], select {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 16px;
+        }
+
+        button {
+            background-color: #026670; /* Teal */
+            color: white;
+            padding: 10px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+        button:hover {
+            background-color: #024c5a; /* Slightly darker teal */
+            transform: scale(1.05); /* Slight zoom effect */
+        }
+
+        .ticket-card {
+            background-color: #f8fbfc; /* Slightly lighter background for cards */
+            border: 1px solid #e0e0e0;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .ticket-card.open {
+            border-left: 5px solid #42b883; /* Green for Open */
+        }
+
+        .ticket-card.completed {
+            border-left: 5px solid #a3a3a3; /* Gray for Completed */
+        }
+
+        .ticket-card h3 {
+            margin: 0;
+            font-size: 18px;
+            color: #333;
+        }
+
+        .ticket-card p {
+            margin: 5px 0;
+            color: #555;
+        }
+
+        .ticket-card .actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .ticket-card .actions button {
+            padding: 5px 10px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .mark-completed-btn {
+            background-color: #42b883; /* Green */
+            border: none;
+            color: white;
+            border-radius: 6px;
+        }
+
+        .mark-completed-btn:hover {
+            background-color: #379e70;
+        }
+
+        .delete-btn {
+            background-color: #dc3545; /* Red */
+            border: none;
+            color: white;
+            border-radius: 6px;
+        }
+
+        .delete-btn:hover {
+            background-color: #b02a37;
+        }
+
+        .no-tickets {
+            text-align: center;
+            color: #888;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 14px;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Submit a Media Request</h2>
+        <form method="POST">
+            <input type="text" name="title" placeholder="Enter Title" required>
+            <select id="category" name="description" required>
+                <option value="" disabled selected>Select Type</option>
+                <option value="Movie">Movie</option>
+                <option value="TV Show">TV Show</option>
+                <option value="Other">Other</option>
+            </select>
+            <button type="submit">Submit Request</button>
         </form>
-        {% endif %}
-    </li>
-    {% endfor %}
-</ul>
 
-<h3>Completed Requests</h3>
-<ul>
-    {% for request in completed_requests %}
-    <li>{{ request.title }} - {{ request.submitted_by }}</li>
-    {% endfor %}
-</ul>
-{% endblock %}
+        <h2>Open Requests</h2>
+        <div class="request-list">
+            {% if open_requests %}
+                {% for request in open_requests %}
+                <div class="ticket-card open">
+                    <div>
+                        <h3>{{ request.title }}</h3>
+                        <p><strong>Type:</strong> {{ request.description }}</p>
+                        <p><strong>Submitted by:</strong> {{ request.submitted_by }}</p>
+                    </div>
+                    <div class="actions">
+                        {% if role == 'admin' %}
+                        <form method="POST" action="{{ url_for('views.update_request', id=request.id) }}">
+                            <button type="submit" class="mark-completed-btn">✔ Mark as Completed</button>
+                        </form>
+                        {% endif %}
+                        {% if role == 'admin' or request.submitted_by == username %}
+                        <form method="POST" action="{{ url_for('views.delete_request', id=request.id) }}">
+                            <button type="submit" class="delete-btn">🗑 Delete</button>
+                        </form>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <p class="no-tickets">No open requests.</p>
+            {% endif %}
+        </div>
 
+        <h2>Completed Requests</h2>
+        <div class="request-list">
+            {% if completed_requests %}
+                {% for request in completed_requests %}
+                <div class="ticket-card completed">
+                    <div>
+                        <h3>{{ request.title }}</h3>
+                        <p><strong>Type:</strong> {{ request.description }}</p>
+                        <p><strong>Submitted by:</strong> {{ request.submitted_by }}</p>
+                    </div>
+                    <div class="actions">
+                        {% if role == 'admin' or request.submitted_by == username %}
+                        <form method="POST" action="{{ url_for('views.delete_request', id=request.id) }}">
+                            <button type="submit" class="delete-btn">🗑 Delete</button>
+                        </form>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <p class="no-tickets">No completed requests.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <footer>
+        © 2024 Smithbrook Streams
+    </footer>
+</body>
+</html>
