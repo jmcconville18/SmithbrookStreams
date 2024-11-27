@@ -26,89 +26,135 @@
         .tournament-info, .leaderboard {
             margin-bottom: 20px;
         }
-        .player {
-            margin-bottom: 10px;
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
         }
-        .player strong {
-            font-weight: bold;
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+        th {
+            background-color: #007BFF;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+        button {
+            margin-top: 10px;
+            padding: 10px 15px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .hidden {
+            display: none;
+        }
+        pre {
+            background-color: #f0f0f0;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
         }
     </style>
     <script>
         async function fetchPGAScores() {
-            try {
-                const response = await fetch('/data/pga?code=3XUpMyQSCo5nMzte');
-                const data = await response.json();
-                const resultsContainer = document.getElementById('results');
+            const resultsContainer = document.getElementById('results');
+            const debugPre = document.getElementById('debug-pre');
 
-                if (data.error) {
-                    resultsContainer.innerHTML = `<p>${data.error}</p>`;
-                    return;
-                }
+            try {
+                const requestUrl = '/data/pga?code=3XUpMyQSCo5nMzte';
+                const response = await fetch(requestUrl);
+                const data = await response.json();
+
+                // Debugging: Log the fetched data and URL
+                debugPre.textContent = `Request URL: ${requestUrl}\n\nResponse:\n${JSON.stringify(data, null, 2)}`;
+                console.log('Fetched Data:', data);
 
                 let results = `<h3>${data.league || 'PGA Tour'}</h3>`;
 
-                const formatDate = (dateStr) => {
-                    const date = new Date(dateStr);
-                    return `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear().toString().slice(-2)}`;
-                };
+                // Render Leaderboard as a Table
+                if (data.games && data.games.length > 0) {
+                    results += `<h4>Leaderboard</h4>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Player</th>
+                                    <th>Score</th>
+                                    <th>Holes</th>
+                                </tr>
+                            </thead>
+                            <tbody>`;
+                    data.games.forEach(player => {
+                        results += `
+                            <tr>
+                                <td>${player.player}</td>
+                                <td>${player.score}</td>
+                                <td>${player.holes}</td>
+                            </tr>`;
+                    });
+                    results += `</tbody></table>`;
+                } else {
+                    results += `<p>No player data available.</p>`;
+                }
 
-                const formatPurse = (purse) => {
-                    return purse ? `$${parseFloat(purse.replace(/,/g, '')).toLocaleString()}` : 'N/A';
-                };
-
-                // Handle Current Tournament
-                if (data.tournaments.current) {
-                    const current = data.tournaments.current;
-                    results += `
-                        <div class="tournament-info">
-                            <h4>Current Tournament: ${current.name}</h4>
-                            <p>Location: ${current.course}, ${current.country}</p>
-                            <p>Dates: ${formatDate(current.start_date)} - ${formatDate(current.end_date)}</p>
-                            <p>Purse: ${formatPurse(current.prize_fund)}</p>
-                            <h4>Leaderboard</h4>
-                        </div>`;
-                    
-                    if (data.games && data.games.length > 0) {
-                        data.games.forEach(player => {
-                            if (player.holes !== 'F') {
-                                results += `<div class="player">
-                                    <strong>${player.player}</strong>: ${player.score} (Holes: ${player.holes})
-                                </div>`;
-                            }
-                        });
+                // Render Tournaments
+                if (data.tournaments) {
+                    if (data.tournaments.next) {
+                        const next = data.tournaments.next;
+                        results += `
+                            <div class="tournament-info">
+                                <h4>Next Tournament: ${next.name}</h4>
+                                <p>Location: ${next.course}, ${next.country}</p>
+                                <p>Dates: ${formatDate(next.start_date)} - ${formatDate(next.end_date)}</p>
+                                <p>Purse: ${formatPurse(next.prize_fund)}</p>
+                            </div>`;
                     }
-                }
 
-                // Handle Next Tournament
-                if (data.tournaments.next) {
-                    const next = data.tournaments.next;
-                    results += `
-                        <div class="tournament-info">
-                            <h4>Next Tournament: ${next.name}</h4>
-                            <p>Location: ${next.course}, ${next.country}</p>
-                            <p>Dates: ${formatDate(next.start_date)} - ${formatDate(next.end_date)}</p>
-                            <p>Purse: ${formatPurse(next.prize_fund)}</p>
-                        </div>`;
-                }
-
-                // Handle Previous Tournament
-                if (data.tournaments.previous) {
-                    const previous = data.tournaments.previous;
-                    results += `
-                        <div class="tournament-info">
-                            <h4>Previous Tournament: ${previous.name}</h4>
-                            <p>Location: ${previous.course}, ${previous.country}</p>
-                            <p>Dates: ${formatDate(previous.start_date)} - ${formatDate(previous.end_date)}</p>
-                            <p>Purse: ${formatPurse(previous.prize_fund)}</p>
-                        </div>`;
+                    if (data.tournaments.previous) {
+                        const previous = data.tournaments.previous;
+                        results += `
+                            <div class="tournament-info">
+                                <h4>Previous Tournament: ${previous.name}</h4>
+                                <p>Location: ${previous.course}, ${previous.country}</p>
+                                <p>Dates: ${formatDate(previous.start_date)} - ${formatDate(previous.end_date)}</p>
+                                <p>Purse: ${formatPurse(previous.prize_fund)}</p>
+                            </div>`;
+                    }
                 }
 
                 resultsContainer.innerHTML = results;
 
             } catch (error) {
                 console.error('Error fetching PGA scores:', error);
-                document.getElementById('results').innerHTML = `<p>Error fetching PGA scores. Please try again later.</p>`;
+                debugPre.textContent = `Error:\n${error}`;
+                resultsContainer.innerHTML = `<p>Error fetching PGA scores. Please try again later.</p>`;
             }
+        }
+
+        const formatDate = (dateStr) => {
+            const date = new Date(dateStr);
+            return `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear().toString().slice(-2)}`;
+        };
+
+        const formatPurse = (purse) => {
+            return purse ? `$${parseFloat(purse.replace(/,/g, '')).toLocaleString()}` : 'N/A';
+        };
+
+        function toggleDebug() {
+            const debugBox = document.getElementById('debug-box');
+            debugBox.classList.toggle('hidden');
         }
 
         document.addEventListener('DOMContentLoaded', fetchPGAScores);
@@ -117,6 +163,10 @@
 <body>
     <div id="results">
         <p>Loading...</p>
+    </div>
+    <button onclick="toggleDebug()">Show/Hide Debug Info</button>
+    <div id="debug-box" class="hidden">
+        <pre id="debug-pre"></pre>
     </div>
 </body>
 </html>

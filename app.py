@@ -28,5 +28,5 @@ app.register_blueprint(metrics_bp, url_prefix='/metrics')
 app.register_blueprint(views_bp)
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=false)
 

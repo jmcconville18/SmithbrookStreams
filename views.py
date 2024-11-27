@@ -19,7 +19,49 @@ def index():
     print(f"Accessing index page - Username: {username}, Role: {role}, Code: {code}")
     return render_template('index.html', username=username, role=role, code=code)
 
+# PGA Scores Page Route
+@views_bp.route('/pga')
+def pga():
+    # Ensure user is logged in
+    if 'username' not in session:
+        flash('Please log in to access this page.')
+        return redirect(url_for('auth.login'))
 
+    username = session.get('username')
+    role = session.get('role')
+
+    # Debugging
+    print(f"Accessing PGA page - Username: {username}, Role: {role}")
+    return render_template('pga.html', username=username, role=role)# PGA Scores Page Route
+    
+@views_bp.route('/weather')
+def weather():
+    # Ensure user is logged in
+    if 'username' not in session:
+        flash('Please log in to access this page.')
+        return redirect(url_for('auth.login'))
+
+    username = session.get('username')
+    role = session.get('role')
+
+    # Debugging
+    print(f"Accessing Weather page - Username: {username}, Role: {role}")
+    return render_template('weather.html', username=username, role=role)
+    
+@views_bp.route('/stocks')
+def stocks():
+    # Ensure user is logged in
+    if 'username' not in session:
+        flash('Please log in to access this page.')
+        return redirect(url_for('auth.login'))
+
+    username = session.get('username')
+    role = session.get('role')
+
+    # Debugging
+    print(f"Accessing Stocks page - Username: {username}, Role: {role}")
+    return render_template('stocks.html', username=username, role=role)
+    
 # Media Requests Page
 @views_bp.route('/media-requests', methods=['GET', 'POST'])
 def media_requests():
@@ -61,7 +103,6 @@ def media_requests():
         username=session.get('username')
     )
 
-
 # Update Media Request (Admin Only)
 @views_bp.route('/update-request/<int:id>', methods=['POST'])
 def update_request(id):
@@ -75,7 +116,6 @@ def update_request(id):
     db.session.commit()
     flash("Request marked as completed.", "success")
     return redirect(url_for('views.media_requests'))
-
 
 # Delete Media Request (Admin or Owner Only)
 @views_bp.route('/delete-request/<int:id>', methods=['POST'])
