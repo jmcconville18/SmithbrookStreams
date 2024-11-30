@@ -1,5 +1,6 @@
 from flask import Blueprint, render_template, request, session, redirect, url_for, flash
 from models import db, MediaRequest
+import qbittorrentapi
 
 views_bp = Blueprint('views', __name__)
 
@@ -94,6 +95,39 @@ def media_requests():
     open_requests = MediaRequest.query.filter_by(status='Open').all()
     completed_requests = MediaRequest.query.filter_by(status='Completed').all()
 
+    # Update torrent progress and status for open requests
+    try:
+        qbt_client = qbittorrentapi.Client(
+            host='192.168.68.67',
+            port=8090,
+            username='admin',  # Update with your username
+            password='P@ssword1'  # Update with your password
+        )
+        qbt_client.auth_log_in()
+
+        torrents = qbt_client.torrents_info()
+
+        for request_obj in open_requests:
+            if request_obj.torrent_link:
+                for torrent in torrents:
+                    if torrent.magnet_uri == request_obj.torrent_link or request_obj.title.lower() in torrent.name.lower():
+                        # Update the request progress and status
+                        request_obj.progress = round(torrent.progress * 100, 1)
+                        request_obj.save_path = torrent.save_path
+                        request_obj.status = torrent.state
+
+                        # Commit changes to the database
+                        db.session.commit()
+                        break
+
+    except qbittorrentapi.LoginFailed as e:
+        flash("Failed to connect to qBittorrent. Check your credentials.", "danger")
+        print(f"ERROR: {e}")
+
+    except Exception as e:
+        flash("An error occurred while fetching torrent progress.", "danger")
+        print(f"ERROR: {e}")
+
     # Pass role and username explicitly to the template
     return render_template(
         'requests.html',
@@ -103,18 +137,75 @@ def media_requests():
         username=session.get('username')
     )
 
-# Update Media Request (Admin Only)
-@views_bp.route('/update-request/<int:id>', methods=['POST'])
-def update_request(id):
+
+# Add Torrent Link to Media Request (Admin Only)
+@views_bp.route('/add_torrent/<int:id>', methods=['POST'])
+def add_torrent(id):
     # Ensure user is logged in and is an admin
     if 'username' not in session or session.get('role') != 'admin':
         flash("Unauthorized access!", "danger")
         return redirect(url_for('views.media_requests'))
 
+    # Get the media request
     request_to_update = MediaRequest.query.get_or_404(id)
-    request_to_update.status = 'Completed'
-    db.session.commit()
-    flash("Request marked as completed.", "success")
+
+    # Get the torrent link from the form
+    torrent_link = request.form.get('torrent_link')
+    if not torrent_link:
+        flash("Torrent link is required!", "danger")
+        return redirect(url_for('views.media_requests'))
+
+    # Connect to qBittorrent Web UI
+    try:
+        # Replace these credentials with your qBittorrent login details
+        qbt_client = qbittorrentapi.Client(
+            host='192.168.68.67',
+            port=8090,
+            username='admin',  # Update with your username
+            password='P@ssword1'  # Update with your password
+        )
+
+        # Ensure the client is authenticated
+        qbt_client.auth_log_in()
+
+        # Add the torrent to qBittorrent using the provided link
+        qbt_client.torrents_add(urls=torrent_link)
+
+        # Pause to allow time for metadata processing
+        import time
+        time.sleep(2)  # Wait for 2 seconds for the torrent to appear
+
+        # Get torrent info after adding it
+        torrents = qbt_client.torrents_info()
+        for torrent in torrents:
+            # Match the torrent using a combination of attributes
+            if torrent.magnet_uri == torrent_link or request_to_update.title.lower() in torrent.name.lower():
+                # Update the database record with torrent info
+                request_to_update.torrent_link = torrent_link
+                request_to_update.save_path = torrent.save_path
+                request_to_update.progress = round(torrent.progress * 100, 1)
+
+                # Commit changes to the database
+                db.session.commit()
+
+                # Log for debugging
+                print(f"DEBUG: Torrent link saved as: {torrent_link}")
+                print(f"DEBUG: Save path is: {torrent.save_path}")
+                print(f"DEBUG: Progress is: {torrent.progress * 100}%")
+
+                flash(f"Torrent added. Downloading to: {torrent.save_path}. Progress: {torrent.progress * 100:.1f}%", "success")
+                break
+        else:
+            print("DEBUG: No matching torrent found in qBittorrent client.")
+
+    except qbittorrentapi.LoginFailed as e:
+        flash("Failed to connect to qBittorrent. Check your credentials.", "danger")
+        print(f"ERROR: {e}")
+
+    except Exception as e:
+        flash("An error occurred while adding the torrent.", "danger")
+        print(f"ERROR: {e}")
+
     return redirect(url_for('views.media_requests'))
 
 # Delete Media Request (Admin or Owner Only)
@@ -140,4 +231,60 @@ def delete_request(id):
     db.session.commit()
     flash("Request deleted successfully.", "success")
     return redirect(url_for('views.media_requests'))
+
+# Update Media Request (Admin Only)
+@views_bp.route('/update_request/<int:id>', methods=['POST'])
+def update_request(id):
+    # Ensure user is logged in and is an admin
+    if 'username' not in session or session.get('role') != 'admin':
+        flash("Unauthorized access!", "danger")
+        return redirect(url_for('views.media_requests'))
+
+    # Get the request to update
+    request_to_update = MediaRequest.query.get_or_404(id)
+
+    # Update status to 'Completed' manually
+    request_to_update.status = 'Completed'
+    db.session.commit()
+    flash("Request marked as completed.", "success")
+    return redirect(url_for('views.media_requests'))
+
+# Automatic Completion if Progress is 100%
+def auto_complete_requests():
+    try:
+        # Fetch open requests
+        open_requests = MediaRequest.query.filter_by(status='Open').all()
+
+        # Connect to qBittorrent Web UI
+        qbt_client = qbittorrentapi.Client(
+            host='192.168.68.67',
+            port=8090,
+            username='admin',  # Update with your username
+            password='P@ssword1'  # Update with your password
+        )
+        qbt_client.auth_log_in()
+
+        torrents = qbt_client.torrents_info()
+
+        for request_obj in open_requests:
+            if request_obj.torrent_link:
+                for torrent in torrents:
+                    if torrent.magnet_uri == request_obj.torrent_link or request_obj.title.lower() in torrent.name.lower():
+                        # If progress is 100%, mark as completed
+                        if torrent.progress == 1.0:
+                            request_obj.status = 'Completed'
+                            request_obj.progress = 100.0
+                            db.session.commit()
+                            flash(f"Request '{request_obj.title}' marked as completed automatically.", "success")
+                        break
+
+    except qbittorrentapi.LoginFailed as e:
+        flash("Failed to connect to qBittorrent. Check your credentials.", "danger")
+        print(f"ERROR: {e}")
+
+    except Exception as e:
+        flash("An error occurred while checking torrent progress.", "danger")
+        print(f"ERROR: {e}")
+
+# You can use a scheduler to call `auto_complete_requests` periodically.
 

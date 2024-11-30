@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -149,7 +148,7 @@
 <body>
     <div class="container">
         <h2>Submit a Media Request</h2>
-        <form method="POST">
+        <form method="POST" action="{{ url_for('views.media_requests') }}">
             <input type="text" name="title" placeholder="Enter Title" required>
             <select id="category" name="description" required>
                 <option value="" disabled selected>Select Type</option>
@@ -169,11 +168,23 @@
                         <h3>{{ request.title }}</h3>
                         <p><strong>Type:</strong> {{ request.description }}</p>
                         <p><strong>Submitted by:</strong> {{ request.submitted_by }}</p>
+                        {% if request.torrent_link %}
+                        <p><strong>Torrent Link:</strong> Torrent Added</p>
+                        <p><strong>Status:</strong> {{ request.status if request.status else "Unknown" }}</p>
+                        <p><strong>Save Path:</strong> {{ request.save_path if request.save_path else "Pending" }}</p>
+                        <p><strong>Progress:</strong> {{ '%.1f'|format(request.progress) if request.progress is not none else '0.0' }}%</p>
+                        {% else %}
+                        <p><em>No torrent added yet.</em></p>
+                        {% endif %}
                     </div>
                     <div class="actions">
                         {% if role == 'admin' %}
                         <form method="POST" action="{{ url_for('views.update_request', id=request.id) }}">
                             <button type="submit" class="mark-completed-btn">✔ Mark as Completed</button>
+                        </form>
+                        <form method="POST" action="{{ url_for('views.add_torrent', id=request.id) }}">
+                            <input type="text" name="torrent_link" placeholder="Enter Torrent Link" required>
+                            <button type="submit" class="mark-completed-btn">⬇ Add Torrent</button>
                         </form>
                         {% endif %}
                         {% if role == 'admin' or request.submitted_by == username %}
@@ -198,13 +209,6 @@
                         <h3>{{ request.title }}</h3>
                         <p><strong>Type:</strong> {{ request.description }}</p>
                         <p><strong>Submitted by:</strong> {{ request.submitted_by }}</p>
-                    </div>
-                    <div class="actions">
-                        {% if role == 'admin' or request.submitted_by == username %}
-                        <form method="POST" action="{{ url_for('views.delete_request', id=request.id) }}">
-                            <button type="submit" class="delete-btn">🗑 Delete</button>
-                        </form>
-                        {% endif %}
                     </div>
                 </div>
                 {% endfor %}

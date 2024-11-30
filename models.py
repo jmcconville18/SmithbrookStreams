@@ -12,6 +12,9 @@ class MediaRequest(db.Model):
     submitted_by = db.Column(db.String(50), nullable=False)
     status = db.Column(db.String(20), default='Open')
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    torrent_link = db.Column(db.String(255), nullable=True)  # Stores the torrent link
+    save_path = db.Column(db.String(255), nullable=True)     # Stores the download location
+    progress = db.Column(db.Float, default=0.0)              # Stores the download progress
 
     def __repr__(self):
         return f'<MediaRequest {self.title}>'

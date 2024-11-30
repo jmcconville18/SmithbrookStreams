@@ -6,6 +6,10 @@ from data import data_bp
 from metrics import metrics_bp
 from views import views_bp
 from models import db  # Import the database instance
+import logging
+
+# Configure logging to be less verbose
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 app = Flask(__name__)
 app.secret_key = '3XUpMyQSCo5nMzte'
@@ -28,5 +32,5 @@ app.register_blueprint(metrics_bp, url_prefix='/metrics')
 app.register_blueprint(views_bp)
 
 if __name__ == '__main__':
-    app.run(debug=false)
+    app.run(debug=False)
 
