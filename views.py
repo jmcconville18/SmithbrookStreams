@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, request, session, redirect, url_for, flash
 from models import db, MediaRequest
 import qbittorrentapi
+import time
 
 views_bp = Blueprint('views', __name__)
 
@@ -33,8 +34,8 @@ def pga():
 
     # Debugging
     print(f"Accessing PGA page - Username: {username}, Role: {role}")
-    return render_template('pga.html', username=username, role=role)# PGA Scores Page Route
-    
+    return render_template('pga.html', username=username, role=role)
+
 @views_bp.route('/weather')
 def weather():
     # Ensure user is logged in
@@ -48,7 +49,7 @@ def weather():
     # Debugging
     print(f"Accessing Weather page - Username: {username}, Role: {role}")
     return render_template('weather.html', username=username, role=role)
-    
+
 @views_bp.route('/stocks')
 def stocks():
     # Ensure user is logged in
@@ -62,7 +63,7 @@ def stocks():
     # Debugging
     print(f"Accessing Stocks page - Username: {username}, Role: {role}")
     return render_template('stocks.html', username=username, role=role)
-    
+
 # Media Requests Page
 @views_bp.route('/media-requests', methods=['GET', 'POST'])
 def media_requests():
@@ -100,8 +101,8 @@ def media_requests():
         qbt_client = qbittorrentapi.Client(
             host='192.168.68.67',
             port=8090,
-            username='admin',  # Update with your username
-            password='P@ssword1'  # Update with your password
+            username='admin',
+            password='P@ssword1'
         )
         qbt_client.auth_log_in()
 
@@ -109,16 +110,31 @@ def media_requests():
 
         for request_obj in open_requests:
             if request_obj.torrent_link:
-                for torrent in torrents:
-                    if torrent.magnet_uri == request_obj.torrent_link or request_obj.title.lower() in torrent.name.lower():
-                        # Update the request progress and status
-                        request_obj.progress = round(torrent.progress * 100, 1)
-                        request_obj.save_path = torrent.save_path
-                        request_obj.status = torrent.state
+                torrent_hash = request_obj.torrent_link.split('&btih=')[-1][:40]  # Extracting torrent hash
+                matched_torrent = None
 
-                        # Commit changes to the database
-                        db.session.commit()
+                # Match the torrent using hash or title
+                for torrent in torrents:
+                    if torrent.hash == torrent_hash or request_obj.title.lower() in torrent.name.lower():
+                        matched_torrent = torrent
                         break
+
+                # Update the database with torrent progress and other information
+                if matched_torrent:
+                    updated = False
+                    if request_obj.progress != round(matched_torrent.progress * 100, 1):
+                        request_obj.progress = round(matched_torrent.progress * 100, 1)
+                        updated = True
+                    if request_obj.save_path != matched_torrent.save_path:
+                        request_obj.save_path = matched_torrent.save_path
+                        updated = True
+                    if request_obj.status != matched_torrent.state:
+                        request_obj.status = matched_torrent.state
+                        updated = True
+
+                    if updated:
+                        db.session.commit()
+                        print(f"DEBUG: Updated request '{request_obj.title}' - Progress: {request_obj.progress}%, Status: {request_obj.status}")
 
     except qbittorrentapi.LoginFailed as e:
         flash("Failed to connect to qBittorrent. Check your credentials.", "danger")
@@ -128,7 +144,6 @@ def media_requests():
         flash("An error occurred while fetching torrent progress.", "danger")
         print(f"ERROR: {e}")
 
-    # Pass role and username explicitly to the template
     return render_template(
         'requests.html',
         open_requests=open_requests,
@@ -136,7 +151,6 @@ def media_requests():
         role=session.get('role'),
         username=session.get('username')
     )
-
 
 # Add Torrent Link to Media Request (Admin Only)
 @views_bp.route('/add_torrent/<int:id>', methods=['POST'])
@@ -157,33 +171,27 @@ def add_torrent(id):
 
     # Connect to qBittorrent Web UI
     try:
-        # Replace these credentials with your qBittorrent login details
         qbt_client = qbittorrentapi.Client(
             host='192.168.68.67',
             port=8090,
-            username='admin',  # Update with your username
-            password='P@ssword1'  # Update with your password
+            username='admin',
+            password='P@ssword1'
         )
-
-        # Ensure the client is authenticated
         qbt_client.auth_log_in()
 
         # Add the torrent to qBittorrent using the provided link
         qbt_client.torrents_add(urls=torrent_link)
-
-        # Pause to allow time for metadata processing
-        import time
         time.sleep(2)  # Wait for 2 seconds for the torrent to appear
 
         # Get torrent info after adding it
         torrents = qbt_client.torrents_info()
         for torrent in torrents:
-            # Match the torrent using a combination of attributes
             if torrent.magnet_uri == torrent_link or request_to_update.title.lower() in torrent.name.lower():
                 # Update the database record with torrent info
                 request_to_update.torrent_link = torrent_link
                 request_to_update.save_path = torrent.save_path
                 request_to_update.progress = round(torrent.progress * 100, 1)
+                request_to_update.torrent_hash = torrent.hash  # Save torrent hash
 
                 # Commit changes to the database
                 db.session.commit()
@@ -192,6 +200,7 @@ def add_torrent(id):
                 print(f"DEBUG: Torrent link saved as: {torrent_link}")
                 print(f"DEBUG: Save path is: {torrent.save_path}")
                 print(f"DEBUG: Progress is: {torrent.progress * 100}%")
+                print(f"DEBUG: Torrent hash: {torrent.hash}")
 
                 flash(f"Torrent added. Downloading to: {torrent.save_path}. Progress: {torrent.progress * 100:.1f}%", "success")
                 break
@@ -268,15 +277,23 @@ def auto_complete_requests():
 
         for request_obj in open_requests:
             if request_obj.torrent_link:
+                # Extract the torrent hash for matching purposes
+                torrent_hash = request_obj.torrent_link.split('&btih=')[-1][:40]
+                matched_torrent = None
+
+                # Match the torrent using hash or title
                 for torrent in torrents:
-                    if torrent.magnet_uri == request_obj.torrent_link or request_obj.title.lower() in torrent.name.lower():
-                        # If progress is 100%, mark as completed
-                        if torrent.progress == 1.0:
-                            request_obj.status = 'Completed'
-                            request_obj.progress = 100.0
-                            db.session.commit()
-                            flash(f"Request '{request_obj.title}' marked as completed automatically.", "success")
+                    if torrent.hash == torrent_hash or request_obj.title.lower() in torrent.name.lower():
+                        matched_torrent = torrent
                         break
+
+                # If progress is 100%, mark as completed
+                if matched_torrent and matched_torrent.progress == 1.0:
+                    request_obj.status = 'Completed'
+                    request_obj.progress = 100.0
+                    db.session.commit()
+                    print(f"DEBUG: Request '{request_obj.title}' marked as completed automatically.")
+                    flash(f"Request '{request_obj.title}' marked as completed automatically.", "success")
 
     except qbittorrentapi.LoginFailed as e:
         flash("Failed to connect to qBittorrent. Check your credentials.", "danger")
