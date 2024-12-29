@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask #, Mail, Message
 from flask_migrate import Migrate  # Import Flask-Migrate
 from auth import auth_bp
 from admin import admin_bp
@@ -6,6 +6,7 @@ from data import data_bp
 from metrics import metrics_bp
 from views import views_bp
 from models import db  # Import the database instance
+# from pushover import Client
 import logging
 
 # Configure logging to be less verbose

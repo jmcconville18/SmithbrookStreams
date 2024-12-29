@@ -4,10 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Media Requests</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #e8f8f5; /* Light teal background */
+            background-color: #e8f8f5;
             margin: 0;
             padding: 0;
         }
@@ -22,7 +23,7 @@
         }
 
         h2 {
-            color: #026670; /* Deep teal */
+            color: #026670;
             margin-bottom: 20px;
             text-align: center;
             position: relative;
@@ -54,7 +55,7 @@
         }
 
         button {
-            background-color: #026670; /* Teal */
+            background-color: #026670;
             color: white;
             padding: 10px;
             border: none;
@@ -65,27 +66,27 @@
         }
 
         button:hover {
-            background-color: #024c5a; /* Slightly darker teal */
-            transform: scale(1.05); /* Slight zoom effect */
+            background-color: #024c5a;
+            transform: scale(1.05);
         }
 
         .ticket-card {
-            background-color: #f8fbfc; /* Slightly lighter background for cards */
+            background-color: #f8fbfc;
             border: 1px solid #e0e0e0;
             padding: 15px;
             border-radius: 8px;
             margin-bottom: 15px;
             display: flex;
             justify-content: space-between;
-            align-items: center;
+            align-items: flex-start;
         }
 
         .ticket-card.open {
-            border-left: 5px solid #42b883; /* Green for Open */
+            border-left: 5px solid #42b883;
         }
 
         .ticket-card.completed {
-            border-left: 5px solid #a3a3a3; /* Gray for Completed */
+            border-left: 5px solid #a3a3a3;
         }
 
         .ticket-card h3 {
@@ -102,19 +103,16 @@
         .ticket-card .actions {
             display: flex;
             gap: 10px;
-        }
-
-        .ticket-card .actions button {
-            padding: 5px 10px;
-            font-size: 14px;
-            cursor: pointer;
+            flex-direction: column;
         }
 
         .mark-completed-btn {
-            background-color: #42b883; /* Green */
+            background-color: #42b883;
             border: none;
             color: white;
             border-radius: 6px;
+            padding: 5px 10px;
+            font-size: 14px;
         }
 
         .mark-completed-btn:hover {
@@ -122,10 +120,12 @@
         }
 
         .delete-btn {
-            background-color: #dc3545; /* Red */
+            background-color: #dc3545;
             border: none;
             color: white;
             border-radius: 6px;
+            padding: 5px 10px;
+            font-size: 14px;
         }
 
         .delete-btn:hover {
@@ -142,6 +142,52 @@
             margin-top: 20px;
             font-size: 14px;
             color: #555;
+        }
+
+        /* New styles for torrent functionality */
+        .progress-bar-container {
+            background-color: #f0f0f0;
+            border-radius: 4px;
+            height: 20px;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            background-color: #42b883;
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s ease;
+            color: white;
+            font-size: 12px;
+            line-height: 20px;
+            text-align: center;
+        }
+
+        .refresh-btn {
+            background-color: #026670;
+            color: white;
+            padding: 5px 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .speed-info {
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
+        .torrent-form {
+            margin-top: 10px;
+        }
+
+        .torrent-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-top: 10px;
         }
     </style>
 </head>
@@ -169,27 +215,45 @@
                         <p><strong>Type:</strong> {{ request.description }}</p>
                         <p><strong>Submitted by:</strong> {{ request.submitted_by }}</p>
                         {% if request.torrent_link %}
-                        <p><strong>Torrent Link:</strong> Torrent Added</p>
-                        <p><strong>Status:</strong> {{ request.status if request.status else "Unknown" }}</p>
-                        <p><strong>Save Path:</strong> {{ request.save_path if request.save_path else "Pending" }}</p>
-                        <p><strong>Progress:</strong> {{ '%.1f'|format(request.progress) if request.progress is not none else '0.0' }}%</p>
+                            <p><strong>Status:</strong> <span class="status">{{ request.status if request.status else "Unknown" }}</span></p>
+                            <p><strong>Save Path:</strong> {{ request.save_path if request.save_path else "Pending" }}</p>
+                            <div class="torrent-status" data-request-id="{{ request.id }}">
+                                <div class="progress-bar-container">
+                                    <div class="progress-bar" style="width: {{ '%.1f'|format(request.progress) if request.progress is not none else '0.0' }}%">
+                                        {{ '%.1f'|format(request.progress) if request.progress is not none else '0.0' }}%
+                                    </div>
+                                </div>
+                                <div class="speed-info">
+                                    <span class="eta"></span>
+                                    <span class="speed"></span>
+                                    <button class="refresh-btn" onclick="refreshTorrent({{ request.id }})">↻ Refresh</button>
+                                </div>
+                            </div>
                         {% else %}
-                        <p><em>No torrent added yet.</em></p>
+                            {% if role == 'admin' %}
+                            <form method="POST" action="{{ url_for('views.add_torrent', id=request.id) }}" class="torrent-form">
+                                <input type="text" name="torrent_link" placeholder="Enter Torrent Link" required>
+                                <select name="save_path" required>
+                                    <option value="">Select folder...</option>
+                                    <option value="/mnt/JoeDrive/Movies">Movies</option>
+                                    <option value="/mnt/JoeDrive/TV Shows">TV Shows</option>
+                                </select>
+                                <div class="torrent-controls">
+                                    <button type="submit" class="mark-completed-btn"> Add Torrent</button>
+                                </div>
+                            </form>
+                            {% endif %}
                         {% endif %}
                     </div>
                     <div class="actions">
                         {% if role == 'admin' %}
                         <form method="POST" action="{{ url_for('views.update_request', id=request.id) }}">
-                            <button type="submit" class="mark-completed-btn">✔ Mark as Completed</button>
-                        </form>
-                        <form method="POST" action="{{ url_for('views.add_torrent', id=request.id) }}">
-                            <input type="text" name="torrent_link" placeholder="Enter Torrent Link" required>
-                            <button type="submit" class="mark-completed-btn">⬇ Add Torrent</button>
+                            <button type="submit" class="mark-completed-btn"> Mark as Completed</button>
                         </form>
                         {% endif %}
                         {% if role == 'admin' or request.submitted_by == username %}
                         <form method="POST" action="{{ url_for('views.delete_request', id=request.id) }}">
-                            <button type="submit" class="delete-btn">🗑 Delete</button>
+                            <button type="submit" class="delete-btn"> Delete</button>
                         </form>
                         {% endif %}
                     </div>
@@ -221,5 +285,64 @@
     <footer>
         © 2024 Smithbrook Streams
     </footer>
+
+    <script>
+        function refreshTorrent(requestId) {
+            const statusContainer = document.querySelector(`.torrent-status[data-request-id="${requestId}"]`);
+            const refreshBtn = statusContainer.querySelector('.refresh-btn');
+            refreshBtn.disabled = true;
+            
+            fetch(`/refresh_torrent/${requestId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        console.error('Error:', data.error);
+                        return;
+                    }
+                    
+                    // Update progress bar
+                    const progressBar = statusContainer.querySelector('.progress-bar');
+                    progressBar.style.width = `${data.progress}%`;
+                    progressBar.textContent = `${data.progress}%`;
+                    
+                    // Update status
+                    const statusElement = document.querySelector('.status');
+                    if (statusElement) {
+                        statusElement.textContent = data.status;
+                    }
+                    
+                    // Update ETA and speed
+                    const etaElement = statusContainer.querySelector('.eta');
+                    const speedElement = statusContainer.querySelector('.speed');
+                    
+                    if (data.eta && data.eta !== -1) {
+                        const hours = Math.floor(data.eta / 3600);
+                        const minutes = Math.floor((data.eta % 3600) / 60);
+                        etaElement.textContent = `ETA: ${hours}h ${minutes}m`;
+                    }
+                    
+                    if (data.download_speed) {
+                        const speed = (data.download_speed / (1024 * 1024)).toFixed(2);
+                        speedElement.textContent = ` • ${speed} MB/s`;
+                    }
+                })
+                .catch(error => console.error('Error:', error))
+                .finally(() => {
+                    refreshBtn.disabled = false;
+                });
+        }
+
+        // Auto-refresh active torrents every 30 seconds
+        setInterval(() => {
+            document.querySelectorAll('.torrent-status').forEach(container => {
+                const requestId = container.dataset.requestId;
+                const progress = container.querySelector('.progress-bar');
+                const currentProgress = parseFloat(progress.style.width);
+                if (currentProgress < 100) {
+                    refreshTorrent(requestId);
+                }
+            });
+        }, 30000);
+    </script>
 </body>
 </html>

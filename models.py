@@ -1,6 +1,31 @@
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
+class MatrixDevice(db.Model):
+    __tablename__ = 'matrix_devices'
+    
+    id = db.Column(db.String(10), primary_key=True)  # Device ID like "47ab"
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    name = db.Column(db.String(50))
+    wifi_ssid = db.Column(db.String(50))
+    wifi_password = db.Column(db.String(50))
+    last_seen = db.Column(db.DateTime)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Relationships
+    user = db.relationship('User', backref='matrix_devices')
+    configs = db.relationship('MatrixAppConfig', backref='device', lazy=True)
 
+class MatrixAppConfig(db.Model):
+    __tablename__ = 'matrix_app_configs'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    device_id = db.Column(db.String(10), db.ForeignKey('matrix_devices.id'))
+    app_type = db.Column(db.String(20))  # 'clock', 'weather', 'stocks', etc.
+    settings = db.Column(db.JSON)
+    display_order = db.Column(db.Integer)
+    active = db.Column(db.Boolean, default=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 db = SQLAlchemy()
 
 class MediaRequest(db.Model):
